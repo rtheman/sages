@@ -1,0 +1,343 @@
+{
+  "metadata": {
+    "version": 1,
+    "disable_limits": false
+  },
+  "nodes": [
+    {
+      "node_id": "d59909a8-0734-4394-91f4-b59934b4d803",
+      "type": "SOURCE",
+      "operator": "sagemaker.s3_source_0.1",
+      "parameters": {
+        "dataset_definition": {
+          "__typename": "S3CreateDatasetDefinitionOutput",
+          "datasetSourceType": "S3",
+          "name": "airOT201101.csv",
+          "description": null,
+          "s3ExecutionContext": {
+            "__typename": "S3ExecutionContext",
+            "s3Uri": "s3://from-public-data/carrier-perf/transformed/airOT2011/airOT201101.csv",
+            "s3ContentType": "csv",
+            "s3HasHeader": true
+          }
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "cfd2eda1-3815-47b7-bd8e-3b7f504ac408",
+      "type": "TRANSFORM",
+      "operator": "sagemaker.spark.infer_and_cast_type_0.1",
+      "parameters": {},
+      "trained_parameters": {
+        "schema": {
+          "YEAR": "long",
+          "MONTH": "long",
+          "DAY_OF_MONTH": "long",
+          "DAY_OF_WEEK": "long",
+          "FL_DATE": "date",
+          "UNIQUE_CARRIER": "string",
+          "TAIL_NUM": "string",
+          "FL_NUM": "long",
+          "ORIGIN_AIRPORT_ID": "long",
+          "ORIGIN": "string",
+          "ORIGIN_STATE_ABR": "string",
+          "DEST_AIRPORT_ID": "long",
+          "DEST": "string",
+          "DEST_STATE_ABR": "string",
+          "CRS_DEP_TIME": "long",
+          "DEP_TIME": "long",
+          "DEP_DELAY": "float",
+          "DEP_DELAY_NEW": "float",
+          "DEP_DEL15": "float",
+          "DEP_DELAY_GROUP": "long",
+          "TAXI_OUT": "float",
+          "WHEELS_OFF": "long",
+          "WHEELS_ON": "long",
+          "TAXI_IN": "float",
+          "CRS_ARR_TIME": "long",
+          "ARR_TIME": "long",
+          "ARR_DELAY": "float",
+          "ARR_DELAY_NEW": "float",
+          "ARR_DEL15": "float",
+          "ARR_DELAY_GROUP": "long",
+          "CANCELLED": "float",
+          "CANCELLATION_CODE": "string",
+          "DIVERTED": "float",
+          "CRS_ELAPSED_TIME": "float",
+          "ACTUAL_ELAPSED_TIME": "float",
+          "AIR_TIME": "float",
+          "FLIGHTS": "float",
+          "DISTANCE": "float",
+          "DISTANCE_GROUP": "long",
+          "CARRIER_DELAY": "string",
+          "WEATHER_DELAY": "string",
+          "NAS_DELAY": "string",
+          "SECURITY_DELAY": "string",
+          "LATE_AIRCRAFT_DELAY": "string",
+          "_c44": "string"
+        }
+      },
+      "inputs": [
+        {
+          "name": "default",
+          "node_id": "d59909a8-0734-4394-91f4-b59934b4d803",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "88054477-a0af-4cf9-8bf4-c2dc1a9d8c85",
+      "type": "TRANSFORM",
+      "operator": "sagemaker.spark.handle_missing_0.1",
+      "parameters": {
+        "operator": "Drop missing",
+        "drop_missing_parameters": {
+          "dimension": "Drop Rows",
+          "drop_rows_parameters": {
+            "input_column": "DEP_DELAY"
+          }
+        },
+        "impute_parameters": {
+          "column_type": "Numeric",
+          "numeric_parameters": {
+            "strategy": "Approximate Median"
+          }
+        }
+      },
+      "inputs": [
+        {
+          "name": "df",
+          "node_id": "cfd2eda1-3815-47b7-bd8e-3b7f504ac408",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "26c73b72-4506-4dd0-a4b6-1f10f5175eb5",
+      "type": "TRANSFORM",
+      "operator": "sagemaker.spark.handle_outliers_0.1",
+      "parameters": {
+        "operator": "Standard deviation numeric outliers",
+        "standard_deviation_numeric_outliers_parameters": {
+          "standard_deviations": 4,
+          "input_column": "DEP_DELAY",
+          "output_column": "DEP_DELAY_no_outliers",
+          "fix_method": "Clip"
+        }
+      },
+      "trained_parameters": {
+        "standard_deviation_numeric_outliers_parameters": {
+          "_hash": -3480705171114307000,
+          "lower_threshold": -118.95033477232938,
+          "upper_threshold": 136.450943289041
+        }
+      },
+      "inputs": [
+        {
+          "name": "df",
+          "node_id": "88054477-a0af-4cf9-8bf4-c2dc1a9d8c85",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "bedb34b6-0020-42fd-a20e-6ad4dbfd8d6f",
+      "type": "TRANSFORM",
+      "operator": "sagemaker.spark.custom_formula_0.1",
+      "parameters": {
+        "output_column": "late_flight",
+        "formula": "if(DEP_DELAY_no_outliers > 0, \"late\", \"not_late\")"
+      },
+      "inputs": [
+        {
+          "name": "df",
+          "node_id": "26c73b72-4506-4dd0-a4b6-1f10f5175eb5",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "d1c4a3ff-b947-4b1d-b4a6-eb80b8e8ce9c",
+      "type": "TRANSFORM",
+      "operator": "sagemaker.spark.cast_single_data_type_0.1",
+      "parameters": {
+        "column": "DEP_DELAY_no_outliers",
+        "original_data_type": "Object",
+        "data_type": "long"
+      },
+      "inputs": [
+        {
+          "name": "df",
+          "node_id": "bedb34b6-0020-42fd-a20e-6ad4dbfd8d6f",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "ebef252a-6d6d-45ac-b031-4f5e5c22ca2e",
+      "type": "VISUALIZATION",
+      "operator": "sagemaker.visualizations.histogram_0.1",
+      "parameters": {
+        "name": "Delays Profile",
+        "x_axis": "DEP_DELAY_no_outliers"
+      },
+      "inputs": [
+        {
+          "name": "df",
+          "node_id": "d1c4a3ff-b947-4b1d-b4a6-eb80b8e8ce9c",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "f3803394-d13b-45d6-9c31-5637ff97e61b",
+      "type": "VISUALIZATION",
+      "operator": "sagemaker.visualizations.scatterplot_0.1",
+      "parameters": {
+        "name": "Delays Over Time",
+        "x_axis": "DEP_TIME",
+        "y_axis": "DEP_DELAY_no_outliers",
+        "color_by": "UNIQUE_CARRIER"
+      },
+      "inputs": [
+        {
+          "name": "df",
+          "node_id": "d1c4a3ff-b947-4b1d-b4a6-eb80b8e8ce9c",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "08c22fcd-3f27-4f71-9d3e-9e3d862f1f4b",
+      "type": "TRANSFORM",
+      "operator": "sagemaker.spark.custom_sql_0.1",
+      "parameters": {
+        "sql": "/* Table is available as variable `df`*/\nselect \n\tYEAR,\n    MONTH,\n    DAY_OF_MONTH,\n    DAY_OF_WEEK,\n    ORIGIN,\n    DEST,\n    DEP_TIME,\n    DEP_DELAY_no_outliers,\n    ACTUAL_ELAPSED_TIME,\n    AIR_TIME,\n    ARR_TIME,\n    ARR_DELAY,\n    DISTANCE,\n    late_flight\nfrom df"
+      },
+      "inputs": [
+        {
+          "name": "df",
+          "node_id": "d1c4a3ff-b947-4b1d-b4a6-eb80b8e8ce9c",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "55a27930-3c66-4b4c-b257-3d9eabc73c43",
+      "type": "VISUALIZATION",
+      "operator": "sagemaker.visualizations.quick_model_0.1",
+      "parameters": {
+        "name": "Delay",
+        "label": "late_flight"
+      },
+      "inputs": [
+        {
+          "name": "df",
+          "node_id": "08c22fcd-3f27-4f71-9d3e-9e3d862f1f4b",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "acb53069-34d1-423d-856d-c600bf8f0fbc",
+      "type": "TRANSFORM",
+      "operator": "sagemaker.spark.manage_columns_0.1",
+      "parameters": {
+        "operator": "Rename column",
+        "rename_column_parameters": {
+          "input_column": "YEAR",
+          "new_name": "YR"
+        },
+        "drop_column_parameters": {}
+      },
+      "inputs": [
+        {
+          "name": "df",
+          "node_id": "08c22fcd-3f27-4f71-9d3e-9e3d862f1f4b",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "b788d6a4-beaf-44c1-a0f2-db07f3c97b00",
+      "type": "TRANSFORM",
+      "operator": "sagemaker.spark.manage_columns_0.1",
+      "parameters": {
+        "operator": "Rename column",
+        "rename_column_parameters": {
+          "input_column": "MONTH",
+          "new_name": "MO"
+        },
+        "drop_column_parameters": {}
+      },
+      "inputs": [
+        {
+          "name": "df",
+          "node_id": "acb53069-34d1-423d-856d-c600bf8f0fbc",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    }
+  ]
+}
