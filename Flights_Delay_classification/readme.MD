@@ -14,7 +14,7 @@ re.  **(1.)**, Factors that leads to delays:
 -  _Departure Date_ (Day of the Month, Month, Day of Week)  
 -  _Distance of flight_  
 
-![features importance](https://photos.app.goo.gl/PmnH4ZKbUGcEXvg17)
+![features importance](https://github.com/rtheman/sages/blob/main/Flights_Delay_classification/features_importance_001.png?raw=true)
 
 ... are generally the top reasons (highest explanatory power toward the target variable, `late_flight`). More specifically, these attributes were derived from using data specific to an airline (American Eagle airline [OO])
 
