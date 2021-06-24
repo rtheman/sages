@@ -16,6 +16,7 @@ re.  **(1.)**, Factors that leads to delays:
 
 ![features importance](https://github.com/rtheman/sages/blob/main/Flights_Delay_classification/features_importance_001.png?raw=true)
 
+
 ... are generally the top reasons (highest explanatory power toward the target variable, `late_flight`). More specifically, these attributes were derived from using data specific to an airline (American Eagle airline [OO])
 
 As a double-check, it seems the same factors are also the top-most causes of delay when using data across all airports (whole year of 2007):
@@ -69,6 +70,9 @@ I often use PyCaret to quickly get a sense of the effectiveness of different ML 
 - data impute or imbalance due to multicollinearity (e.g., day of week / day of month versus traffic volume)
 - features grouping
 - models assembling/stacking
+
+You can see my logics / results at [2_Train_Model_pycaret_v1.ipynb](https://github.com/rtheman/sages/blob/main/Flights_Delay_classification/2_Train_Model_pycaret_v1.ipynb)
+![models comparison via PyCaret](https://github.com/rtheman/sages/blob/main/Flights_Delay_classification/models_comparison_PyCaret.png?raw=true)
 
 While Sagemaker and PyCaret 'automated' quite a bit of design and engineering of a traditional approach, and there were only 17-features used for the model; the train/validate/test dataset exploded to hundreds of dimension (e.g., one-hot encoding) due to the Categorical data type even when I was using _ml.g4dn.xlarge_ (4x Core GPU, 16MB RAM)
 
